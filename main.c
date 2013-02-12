@@ -3,14 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-//#include "globals.h"
-//#include "main.h"
-//#include "psrcan/psrcan.h"
-//#include "types.h"
-//#include "debugmenu.h"
-//#include "gen/can_registers_gen.h"
-
-// YOU MAY HAVE HAD TO ADD THE extern "C" line.  Check into that if UART doesn't work
 
 //Define system clock
 
@@ -60,12 +52,46 @@ u32 _second_time = 0;
 // Reset troubleshooting vars
 int _cached_RCON = 0;
 
-//debounce _right_turn = {0};
-//debounce _left_turn = {0};
-//debounce _cruise_up = {0};
-//debounce _cruise_down = {0};
-//debounce _cruise_cancel = {0};
-//debounce _horn = {0};
+unsigned int channel4;	// conversion result as read from result buffer
+unsigned int channel5;	// conversion result as read from result buffer
+unsigned int offset;	// buffer offset to point to the base of the idle buffer
+
+void initializeATD(void)
+{
+    SYSTEMConfig(Fcy, SYS_CFG_WAIT_STATES | SYS_CFG_PCACHE);
+
+    CloseADC10();    // ensure the ADC is off before setting the configuration
+
+    // define setup parameters for OpenADC10
+                // Turn module on | ouput in integer | trigger mode auto | enable autosample
+    #define PARAM1  ADC_MODULE_ON | ADC_FORMAT_INTG | ADC_CLK_AUTO | ADC_AUTO_SAMPLING_ON
+
+    // define setup parameters for OpenADC10
+                // ADC ref external    | disable offset test    | disable scan mode | perform 2 samples | use dual buffers | use alternate mode
+    #define PARAM2  ADC_VREF_AVDD_AVSS | ADC_OFFSET_CAL_DISABLE | ADC_SCAN_OFF | ADC_SAMPLES_PER_INT_2 | ADC_ALT_BUF_ON | ADC_ALT_INPUT_ON
+
+    // define setup parameters for OpenADC10
+    //                   use ADC internal clock | set sample time
+    #define PARAM3  ADC_CONV_CLK_INTERNAL_RC | ADC_SAMPLE_TIME_15
+
+
+    // define setup parameters for OpenADC10
+    // do not assign channels to scan
+    #define PARAM4    SKIP_SCAN_ALL
+
+
+    // define setup parameters for OpenADC10
+                // set AN4 and AN5 as analog inputs
+    #define PARAM5    ENABLE_AN4_ANA | ENABLE_AN5_ANA
+
+        // use ground as neg ref for A | use AN4 for input A      |  use ground as neg ref for A | use AN5 for input B
+
+     // configure to sample AN4 & AN5
+    SetChanADC10( ADC_CH0_NEG_SAMPLEA_NVREF | ADC_CH0_POS_SAMPLEA_AN4 |  ADC_CH0_NEG_SAMPLEB_NVREF | ADC_CH0_POS_SAMPLEB_AN5); // configure to sample AN4 & AN5
+    OpenADC10( PARAM1, PARAM2, PARAM3, PARAM4, PARAM5 ); // configure ADC using parameter define above
+
+    EnableADC10(); // Enable the ADC
+}
 
 void initialize(void)
 {
@@ -121,8 +147,6 @@ void initialize(void)
 //    Changes the printf function to send to UART1, rather than UART2
 //    __C32_UART = 0;
 
-      //DIGITAL OUTPUT PINS
-      PORTSetPinsDigitalOut(IOPORT_B, BIT_9);
     
 //    PORTSetPinsDigitalOut(YELLOW_LED);
 //    PORTSetPinsDigitalOut(GREEN_LED);
@@ -141,61 +165,107 @@ void initialize(void)
 //    PORTSetPinsDigitalIn(RIGHT_T);
 }
 
+/*
+ * @author - Vineeth
+ *
+ * @params - valueToBePrinted => Is the integer value that needs to be converted
+ *                              into a string and printed out on UART
+ *
+ * This function accepts a integer value, and does the necessary conversions
+ * required to send the value out on UART using printf
+ */
+void convertAndPrintIntegerToString(char * stringToBePrinted, int valueToBePrinted) {
+    int temp = valueToBePrinted;
+    int lengthOfInteger = 0;
+
+    printf(stringToBePrinted);
+    /*
+     *  Loop to count number of digits in the integer to be printed.
+     */
+    while(temp != 0) {
+        temp = temp / 10;
+        lengthOfInteger++;
+    }
+    
+    int modDivideValue = 0;
+    int digitToBePrinted = 0;
+    
+    /*
+     *  Loop to actually start printing out each digit in the integer from left
+     *  to right. 
+     */
+    while(lengthOfInteger != 0) {
+        modDivideValue = pow(10, --lengthOfInteger);
+        digitToBePrinted = valueToBePrinted / modDivideValue;
+        valueToBePrinted = valueToBePrinted % modDivideValue;
+
+        switch(digitToBePrinted) {
+            case 0 : printf("0");
+                     break;
+            case 1 : printf("1");
+                     break;
+            case 2 : printf("2");
+                     break;
+            case 3 : printf("3");
+                     break;
+            case 4 : printf("4");
+                     break;
+            case 5 : printf("5");
+                     break;
+            case 6 : printf("6");
+                     break;
+            case 7 : printf("7");
+                     break;
+            case 8 : printf("8");
+                     break;
+            case 9 : printf("9");
+                     break;
+            default : printf("");
+                     break;
+        }
+    }
+    printf(" ");
+}
+
 int i;
 
 int main(void)
 {
-    //PORTSetPinsDigitalOut(IOPORT_B, BIT_9);
     initialize ();
+    initializeATD(); // ATD initialization function
+
+    PORTSetPinsDigitalOut(IOPORT_B, BIT_9);
+    PORTSetBits(IOPORT_B, BIT_9);
+    
+    while ( ! mAD1GetIntFlag() ) { } // wait for the first conversion to complete so there will be vaild data in ADC result registers
+
     while (1)
     {
-        i = 100000;
-        while (i--){};
-        PORTToggleBits(IOPORT_B, BIT_9);
-        printf("RCON (at reset)");
-    }
-}
+        offset = 8 * ((~ReadActiveBufferADC10() & 0x01));  // determine which buffer is idle and create an offset
 
-//#include <p32xxxx.h>
-//#include <plib.h>
-//#include <stdio.h>
-//
-//#pragma config POSCMOD = XT
-//#pragma FNOSC = PRI
-//#pragma FPBDIV = DIV_1
-//#pragma FWDTEN = OFF
-//
-//int i;
-//
-//int main(void)
-//{
-//        // Explorer16 LEDs are on lower 8-bits of PORTA and to use all LEDs, JTAG port must be disabled.
-//        // mJTAGPortEnable(DEBUG_JTAGPORT_OFF);
-//
-//        PORTSetPinsDigitalOut(IOPORT_B, BIT_9);
-//
-//
-//	//mPORTASetPinsDigitalOut( BIT_7 | BIT_6 | BIT_5 | BIT_5 | BIT_4 | \
-//                                                     BIT_3 | BIT_2 | BIT_1 | BIT_0 );
-//
-//	UARTConfigure(UART2, UART_ENABLE_PINS_TX_RX_ONLY);
-//	UARTSetFifoMode(UART2, UART_INTERRUPT_ON_TX_NOT_FULL | UART_INTERRUPT_ON_RX_NOT_EMPTY);
-//	UARTSetLineControl(UART2, UART_DATA_SIZE_8_BITS | UART_PARITY_NONE | UART_STOP_BITS_1);
-//	UARTSetDataRate(UART2, 10000000l, 9600);
-//	UARTEnable(UART2, UART_ENABLE_FLAGS(UART_PERIPHERAL | UART_TX | UART_RX ));
-//
-//        //Changes the printf function to send to UART1, rather than UART2
-//        __C32_UART = 2;
-//
-//	while(1)
-//	{
-//            i = 10000;
-//            while (i--){
-//            PORTToggleBits(};
-//            PORTToggleBits(IOPORT_B, BIT_9);
-//            //mPORTAToggleBits(BIT_7 | BIT_5 | BIT_3 | BIT_1 );
-//            //printf("Hello, world!\r\n");
-//            printf("Hello, world!");
-//            DBPRINTF("Hello World - dbprint!n");
-//	}
-//}
+        channel4 = ReadADC10(offset);          // read the result of channel 4 conversion from the idle buffer
+        channel5 = ReadADC10(offset + 1);      // read the result of channel 5 conversion from the idle buffer
+        
+        i = 500000;
+        while (i--){};
+        if(channel4 > 100) {
+            PORTSetBits(IOPORT_B, BIT_9);
+            //printf(" Set ");
+        }
+        else {
+            PORTClearBits(IOPORT_B, BIT_9);
+            //printf(" Clear ");
+        }
+        //printf(" loop ");
+        if(channel4 != NULL) {
+            convertAndPrintIntegerToString("channel4 => ", channel4);
+            convertAndPrintIntegerToString("channel5 => ", channel5);
+        }
+        else {
+            //printf("NULL");
+        }
+        printf("\n");
+    }
+
+
+}
