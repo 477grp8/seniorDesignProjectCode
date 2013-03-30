@@ -42,6 +42,7 @@ main()
             convertAndPrintIntegerToString(" 5 => ", getChannel5Value());
             printLightLevel();
             drawLightDetectedBar();
+            controlPowerRelay();
             WriteString("\r");
             
             setPrintToUARTFlag(0);

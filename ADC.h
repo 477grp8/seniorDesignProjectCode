@@ -184,5 +184,26 @@ void printLightLevel() {
     }
 
 }
+
+/*
+ * @author - Vineeth
+ *
+ * @params - void
+ *
+ * Power Relay Control based on light levels
+ */
+void controlPowerRelay() {
+    mPORTESetPinsDigitalOut( BIT_7 );
+    mPORTDSetPinsDigitalOut( BIT_11 );
+    if(getChannel5Value() < MIN_LIGHT_THRESHOLD) {
+        mPORTEClearBits(BIT_7 );
+        mPORTDSetBits(BIT_11 );
+    }
+    else {
+        mPORTESetBits(BIT_7 );
+        mPORTDClearBits(BIT_11 );
+    }
+
+}
 #endif	/* ADC_H */
 
