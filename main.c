@@ -7,6 +7,8 @@
 #include "CONFIG.h"
 #include "MISCELLANEOUS.h"
 #include "TIMER.h"
+#include "SDCARD.h"
+
 main()
 {
     // Disable JTAG (on RA0 and RA1 )
@@ -21,6 +23,11 @@ main()
     initializeUART();
     initializeADC();
     initializeLCD();
+
+    /* Initialize SD card */
+    setup_SDSPI();
+    SD_setStart();
+
     ConfigTimer1(); // Enable Timer1 for second counts
     configureInterrupts();
 

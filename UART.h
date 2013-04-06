@@ -162,7 +162,7 @@ void __ISR(_UART2_VECTOR, ipl2) IntUart2Handler(void)
                 UARTSendDataByte( UART1, UARTGetDataByte(UART2) );
 
                 // Toggle LED to indicate UART activity
-                ToggleLED8();
+                //ToggleLED8();
 
         }
 
@@ -179,10 +179,12 @@ void __ISR(_UART1_VECTOR, ipl3) IntUart1Handler(void)
                 // Clear Rx Interrupt Flag
                 INTClearFlag( INT_SOURCE_UART_RX(UART1) );
 
+                while( !UARTReceivedDataIsAvailable(UART1) );
+
                 // Echo UART1 intput to UART2 output
                 UARTSendDataByte(UART2, UARTGetDataByte(UART1) );
 
-                ToggleLED1();
+                //ToggleLED1();
 
         }
 
