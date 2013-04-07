@@ -24,9 +24,18 @@ main()
     initializeADC();
     initializeLCD();
 
+    
     /* Initialize SD card */
     setup_SDSPI();
     SD_setStart();
+    /* Fill tempBuffer[] with int 0 to 63
+     * Write it to the current block.
+     * Empty tempBuffer[] to all 0.
+     * Read from the current block to make sure that it returns the right value.
+     */
+    fillTempBuffer();
+    testSDReadWrite(tempBuffer);
+
 
     ConfigTimer1(); // Enable Timer1 for second counts
     configureInterrupts();
