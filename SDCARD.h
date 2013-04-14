@@ -3,6 +3,8 @@
  * Author: team8
  *
  * Created on March 10, 2013, 3:31 PM
+ *
+ * This custom modified SDCard Driver is based on the driver by ECE477 Team 1, Spring '07. Retrieved March 15th, 2013 from https://engineering.purdue.edu/ece477/Webs/S07-Grp01/docs/SDro.c
  */
 
 #ifndef SDCARD_H
@@ -96,8 +98,10 @@ unsigned char SDWriteBlock(unsigned long);
 typedef unsigned char buffer_typ;
 buffer_typ buffer[SD_BLOCK_SIZE * 8];
 buffer_typ tempBuffer[SD_BLOCK_SIZE * 8];
+int bufferIndex = 0;
 
 unsigned long curr_block;
+unsigned long curr_read_block = 0;
 unsigned char synced;
 unsigned long total_blocks;
 
@@ -144,8 +148,8 @@ unsigned char setup_SDSPI(void) {
 
     LED = 1;
 
-    char msg[] = "init\n";
-    WriteString(msg);
+    //char msg[] = "init\n";
+    //WriteString(msg);
     /*
       unsigned char curr = 'M';
       int i = 0;
@@ -163,7 +167,14 @@ unsigned char setup_SDSPI(void) {
 
     curr_block = 1;
     synced = 0;
+    /*
+     * The TRISB and LATB has to be LOW when accessing the SD card
+     * but it has to be high for the ADC to receive the right amount of voltage
+     */
+    TRISB = 0xFFFF; /* Port B output Data as well as serial port */
+    LATB = 0xFFFF; /* Initial Value of 0 */
 
+ 
     return OK;
 }
 
@@ -199,6 +210,11 @@ unsigned char SDReadBlock(unsigned long block) {
     unsigned char status = 0x0;
     unsigned int offset = 0;
     unsigned char res = 1;
+
+
+    TRISB = 0x0000; /* Port B output Data as well as serial port */
+    LATB = 0x0000; /* Initial Value of 0 */
+
     /*
       if(block >= total_blocks)
       {
@@ -239,8 +255,12 @@ unsigned char SDReadBlock(unsigned long block) {
         //printbyte(*theData);
         theData++;
     }*/
+    int i = 0;
     theData = buffer;
     for (offset = 0; offset < SD_BLOCK_SIZE * 8; offset++) {
+        while(i < 150){
+            i++;
+       }
         *theData = SPIRead();
         //printbyte(*theData);
         theData++;
@@ -250,6 +270,13 @@ unsigned char SDReadBlock(unsigned long block) {
     //pump for eight cycles according to spec
     SPIWrite(0xFF);
 
+        /*
+     * The TRISB and LATB has to be LOW when accessing the SD card
+     * but it has to be high for the ADC to receive the right amount of voltage
+     */
+    TRISB = 0xFFFF;
+    LATB = 0xFFFF;
+    
     //LED = 0;
     return OK;
 }
@@ -259,6 +286,10 @@ unsigned char SDWriteBlock(unsigned long block) {
     unsigned int i;
     unsigned char status;
     unsigned char res = 1;
+
+    TRISB = 0x0000; /* Port B output Data as well as serial port */
+    LATB = 0x0000; /* Initial Value of 0 */
+
 
     while (res) {
         res = InitSD();
@@ -310,6 +341,13 @@ unsigned char SDWriteBlock(unsigned long block) {
 
     //wait 8 clock cycles
     SPIWrite(0xFF);
+
+    /*
+     * The TRISB and LATB has to be LOW when accessing the SD card
+     * but it has to be high for the ADC to receive the right amount of voltage
+     */
+    TRISB = 0x0000;
+    LATB = 0x0000;
 
     return (0);
 
@@ -574,6 +612,25 @@ void testSDReadWrite(char* buff) {
     return;
 
 
+}
+
+void forwardDataToPrinter() {
+    //WriteString("asdklfjasdjklfhasdkfhasdfhasdfasdgfjasdgfsdfggfgasjkfaskfgasdjkfgasdkjfgasdjkfhgasdf");
+    //return;
+    int j;
+    while(curr_read_block != currBlock) {
+        SDReadBlock(curr_read_block);
+        char tempArray[512];
+        for(j = 0; j < 512; j++) {
+            tempArray[j] = (char) buffer[j];
+        }
+        WriteString(tempArray);
+
+        curr_read_block++;
+    }
+}
+void addByteToBuffer(char characterToWrite) {
+    buffer[bufferIndex++] = characterToWrite;
 }
 #endif	/* SDCARD_H */
 

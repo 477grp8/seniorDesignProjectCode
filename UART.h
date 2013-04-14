@@ -13,6 +13,8 @@
 #include "CONFIG.h"
 
 void WriteString(const char *string);
+int NEW_BYTE_RECEIVED = 0;
+char characterByteReceived = 0;
 
 /*
  * Initializes the UART with the config
@@ -159,18 +161,20 @@ void __ISR(_UART2_VECTOR, ipl2) IntUart2Handler(void)
 
                 // Echo what we just received.
                 while( !UARTReceivedDataIsAvailable(UART2) );
-                UARTSendDataByte( UART1, UARTGetDataByte(UART2) );
+                NEW_BYTE_RECEIVED = 1;
+                characterByteReceived = UARTGetDataByte(UART2);
+
+                UARTSendDataByte( UART1, characterByteReceived );
 
                 // Toggle LED to indicate UART activity
                 //ToggleLED8();
-
-        }
+       }
 
         // We don't care about TX interrupt
         if ( INTGetFlag(INT_SOURCE_UART_TX(UART2)) )
         {
                 INTClearFlag(INT_SOURCE_UART_TX(UART2));
-        }
+       }
 }
 
 void __ISR(_UART1_VECTOR, ipl3) IntUart1Handler(void)

@@ -23,17 +23,20 @@
 #include <p32xxxx.h>
 #include <plib.h>
 #include "UART.h"
+#include "TIMER.h"
+#include "MISCELLANEOUS.h"
 
 #define LED_DISCHARGE_TIME 5  // (3)*10ms TIMER1 = 30ms
 
-unsigned int adcSampledInputChannel4 = 0; // ADC sampled input for channel 4 should be stored here
-unsigned int adcSampledInputChannel5 = 0; // ADC sampled input for channel 5 should be stored here
+unsigned int adcSampledInputChannel4 = 12345; // ADC sampled input for channel 4 should be stored here
+unsigned int adcSampledInputChannel5 = 12345; // ADC sampled input for channel 5 should be stored here
 unsigned int adcSampledInputChannel5After30ms = 0; // ADC sampled input for channel 5 should be stored here
 
 unsigned int PREV_adcSampledInputChannel4 = 0; // ADC sampled input for channel 4 should be stored here
 unsigned int PREV_adcSampledInputChannel5 = 0; // ADC sampled input for channel 5 should be stored here
 
-unsigned int MIN_LIGHT_THRESHOLD = 200;
+unsigned int MIN_LIGHT_THRESHOLD = 250;
+unsigned int MIN_SHADOW_DETECTED_THRESHOLD = 200;
 
 /*
  * Initializes the ADC config
@@ -190,6 +193,23 @@ void printLightLevel() {
  *
  * @params - void
  *
+ * Detect shadow based on current sampled value
+ */
+void printShadowDetect() {
+    if(getChannel5Value() < MIN_SHADOW_DETECTED_THRESHOLD) {
+            WriteString(" Shadow - DETECTED ");
+    }
+    else {
+            WriteString(" Shadow - NOT DETECTED ");
+    }
+
+}
+
+/*
+ * @author - Vineeth
+ *
+ * @params - void
+ *
  * Power Relay Control based on light levels
  */
 void controlPowerRelay() {
@@ -198,12 +218,19 @@ void controlPowerRelay() {
     if(getChannel5Value() < MIN_LIGHT_THRESHOLD) {
         mPORTEClearBits(BIT_7 );
         mPORTDSetBits(BIT_11 );
+        if((curr_state == READY) || (curr_state == SLEEP)) {
+            curr_state = HIBERNATE;
+        }
     }
     else {
         mPORTESetBits(BIT_7 );
         mPORTDClearBits(BIT_11 );
+        if(curr_state == HIBERNATE) {
+            curr_state = READY;
+            timeElapsed = 0;
+            transmitDataFromSDCard = 1;
+        }
     }
-
 }
 #endif	/* ADC_H */
 

@@ -8,7 +8,11 @@
 #ifndef MISCELLANEOUS_H
 #define	MISCELLANEOUS_H
 
-
+const int SLEEP_TIMEOUT = 30000; // In milliseconds
+const int HIBERNATE_TIMEOUT = 360000; // In milliseconds
+enum state_typ { READY, SLEEP, HIBERNATE, BUSY};
+enum state_typ curr_state = READY;
+int transmitDataFromSDCard = 0;
 /*
  * @author - Vineeth
  *

@@ -9,6 +9,8 @@
 #include "TIMER.h"
 #include "SDCARD.h"
 
+/* state machine */
+
 main()
 {
     // Disable JTAG (on RA0 and RA1 )
@@ -36,7 +38,8 @@ main()
     fillTempBuffer();
     testSDReadWrite(tempBuffer);
 
-
+    curr_read_block = curr_block;
+    
     ConfigTimer1(); // Enable Timer1 for second counts
     configureInterrupts();
 
@@ -45,7 +48,7 @@ main()
     mPORTASetPinsDigitalOut( LED_MASK ); // LEDs = output
     mPORTDSetPinsDigitalIn( PB_MASK_D ); // PBs on D = input
 
-
+    curr_state = READY;
     // enable interrupts
     INTEnableInterrupts();
     int i = 0;
@@ -54,14 +57,56 @@ main()
         if (getPrintToUARTFlag() == 1){
             //mPORTAToggleBits( LED_MASK );
             convertAndPrintIntegerToString("i => ", i++);
-
+            convertAndPrintIntegerToString("timeElapse => ", timeElapsed);
             convertAndPrintIntegerToString(" 5 => ", getChannel5Value());
+            printShadowDetect();
             printLightLevel();
             drawLightDetectedBar();
             controlPowerRelay();
+
+            switch(curr_state) {
+            case READY : WriteString("State => READY     ");
+                        break;
+            case SLEEP : WriteString("State => SLEEP    ");
+                        break;
+            case HIBERNATE : WriteString("State => HIBERNATE");
+                        break;
+            case BUSY : WriteString("State => BUSY     ");
+                        break;
+            }
             WriteString("\r");
             
             setPrintToUARTFlag(0);
+        }
+        if (NEW_BYTE_RECEIVED == 1){
+            curr_state = READY;
+            NEW_BYTE_RECEIVED = 0;
+            //mPORTAToggleBits( LED_MASK );
+            char tempArray[] = "g";
+            tempArray[0] = characterByteReceived;
+            WriteString(tempArray);
+            if(curr_state = HIBERNATE) {
+                addByteToBuffer(characterByteReceived);
+            }
+            else {
+                PutCharacter(characterByteReceived);
+            }
+        }
+        if(bufferIndex == 512) {
+            SDWriteBlock(currBlock);
+            currBlock++;
+            bufferIndex = 0;
+        }
+         if((curr_state == READY) && (timeElapsed >= SLEEP_TIMEOUT) && (timeElapsed < HIBERNATE_TIMEOUT)) {
+             curr_state = SLEEP;
+         }
+         else if((curr_state == SLEEP) && (timeElapsed >= HIBERNATE_TIMEOUT)) {
+             curr_state = HIBERNATE;
+             timeElapsed = 0;
+         }
+        if (transmitDataFromSDCard == 1) {
+            transmitDataFromSDCard = 0;
+            forwardDataToPrinter();
         }
     } // main (while) loop
 

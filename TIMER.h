@@ -13,10 +13,13 @@
 #include "LCD.h"
 #include "ADC.h"
 #include "UART.h"
+#include "MISCELLANEOUS.h"
 
 unsigned short int SecondParts;
 unsigned short int TenthSecond = 0;
 unsigned short int SecondCount = 0;
+int timeElapsed = 0;
+
 int printToUARTflag = 0;
 
 #define T1_FREQ 100
@@ -80,6 +83,8 @@ void __ISR(_TIMER_1_VECTOR, ipl3) Timer1Handler(void)
             setPrintToUARTFlag(1);
          })
 
+         timeElapsed++;
+         
     // one second part has elapsed
     secondPartElapsed();
 
