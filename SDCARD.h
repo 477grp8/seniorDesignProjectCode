@@ -172,7 +172,7 @@ unsigned char setup_SDSPI(void) {
      * but it has to be high for the ADC to receive the right amount of voltage
      */
     TRISB = 0xFFFF; /* Port B output Data as well as serial port */
-    LATB = 0xFFFF; /* Initial Value of 0 */
+    //LATB = 0xFFFF; /* Initial Value of 0 */
 
  
     return OK;
@@ -213,7 +213,7 @@ unsigned char SDReadBlock(unsigned long block) {
 
 
     TRISB = 0x0000; /* Port B output Data as well as serial port */
-    LATB = 0x0000; /* Initial Value of 0 */
+    //LATB = 0x0000; /* Initial Value of 0 */
 
     /*
       if(block >= total_blocks)
@@ -275,7 +275,7 @@ unsigned char SDReadBlock(unsigned long block) {
      * but it has to be high for the ADC to receive the right amount of voltage
      */
     TRISB = 0xFFFF;
-    LATB = 0xFFFF;
+    //LATB = 0xFFFF;
     
     //LED = 0;
     return OK;
@@ -288,7 +288,7 @@ unsigned char SDWriteBlock(unsigned long block) {
     unsigned char res = 1;
 
     TRISB = 0x0000; /* Port B output Data as well as serial port */
-    LATB = 0x0000; /* Initial Value of 0 */
+    //LATB = 0x0000; /* Initial Value of 0 */
 
 
     while (res) {
@@ -347,7 +347,7 @@ unsigned char SDWriteBlock(unsigned long block) {
      * but it has to be high for the ADC to receive the right amount of voltage
      */
     TRISB = 0x0000;
-    LATB = 0x0000;
+    //LATB = 0x0000;
 
     return (0);
 
