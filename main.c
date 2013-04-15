@@ -58,7 +58,10 @@ main()
             //mPORTAToggleBits( LED_MASK );
             convertAndPrintIntegerToString("i => ", i++);
             convertAndPrintIntegerToString("timeElapse => ", timeElapsed);
-            convertAndPrintIntegerToString(" 5 => ", getChannel5Value());
+            convertAndPrintIntegerToString("timeElapsedLEDSample => ", timeElapsedLEDSample);
+            convertAndPrintIntegerToString("timeElapsedLEDTurnedOff => ", timeElapsedLEDTurnedOff);
+
+            convertAndPrintIntegerToString(" ADC Value => ", getChannel5Value());
             printShadowDetect();
             printLightLevel();
             drawLightDetectedBar();
@@ -74,6 +77,7 @@ main()
             case BUSY : WriteString("State => BUSY     ");
                         break;
             }
+
             WriteString("\r");
             
             setPrintToUARTFlag(0);

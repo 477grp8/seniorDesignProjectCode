@@ -12,6 +12,8 @@
 #include <plib.h>
 #include "MISCELLANEOUS.h"
 
+void printToLCD(char* str);
+
 /*
  * @author - Vineeth
  *

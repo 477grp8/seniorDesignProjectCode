@@ -14,12 +14,17 @@
 #include "ADC.h"
 #include "UART.h"
 #include "MISCELLANEOUS.h"
+#include "SDCARD.h"
 
 unsigned short int SecondParts;
 unsigned short int TenthSecond = 0;
 unsigned short int SecondCount = 0;
 int timeElapsed = 0;
-
+int timeElapsedLEDSample = 0;
+int LED_SAMPLE_COUNT = 1000; // Sample every 10 seconds
+int timeElapsedLEDTurnedOff = 0;
+int LED_TURN_OFF_COUNT = 1000; // Sample every 10 seconds
+int sampleLEDNow = 0;
 int printToUARTflag = 0;
 
 #define T1_FREQ 100
@@ -79,12 +84,27 @@ void __ISR(_TIMER_1_VECTOR, ipl3) Timer1Handler(void)
         INTClearFlag( INT_T1 );
        
         EverySecondDo({
-            SampleLexmarkLEDVoltage();
+            //SampleLexmarkLEDVoltage();
             setPrintToUARTFlag(1);
          })
+         if((timeElapsedLEDSample >= LED_SAMPLE_COUNT) && (sampleLEDNow == 0)) {
+             TurnOffLexmarkLED();
+             timeElapsedLEDTurnedOff = 0;
+             sampleLEDNow = 1;
 
-         timeElapsed++;
-         
+         }
+         if((timeElapsedLEDTurnedOff >= LED_TURN_OFF_COUNT) && (sampleLEDNow == 1)) {
+             sampleLEDNow = 0;
+             SampleLexmarkLEDVoltage();
+             TurnOnLexmarkLED();
+             timeElapsedLEDSample = 0;
+             timeElapsedLEDTurnedOff = 0;
+         }
+         timeElapsedLEDSample++;
+         timeElapsedLEDTurnedOff++;
+       
+          timeElapsed++;
+
     // one second part has elapsed
     secondPartElapsed();
 

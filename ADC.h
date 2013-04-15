@@ -37,7 +37,9 @@ unsigned int PREV_adcSampledInputChannel5 = 0; // ADC sampled input for channel 
 
 unsigned int MIN_LIGHT_THRESHOLD = 250;
 unsigned int MIN_SHADOW_DETECTED_THRESHOLD = 200;
-
+void SampleLexmarkLEDVoltage();
+void TurnOffLexmarkLED();
+void TurnOnLexmarkLED();
 /*
  * Initializes the ADC config
  */
@@ -112,9 +114,9 @@ int getChannel5Value() {
  * Turns off the RB3 pin to turn off the LED
  */
 void TurnOffLexmarkLED() {
-    mPORTBSetPinsDigitalOut( BIT_4 );    //Ensures the pin is in GPIO mode
-    mPORTBSetPinsDigitalOut( BIT_5 );    //Ensures the pin is in GPIO mode
-    mPORTBClearBits(BIT_4 | BIT_5);              //Turn off the bit
+   //PORTSetPinsAnalogIn( IOPORT_A, BIT_3);
+     mPORTASetPinsDigitalIn( BIT_3 );    //Ensures the pin is in GPIO mode
+    mPORTAClearBits(BIT_3);              //Turn off the bit
 }
 
 /*
@@ -125,11 +127,8 @@ void TurnOffLexmarkLED() {
  * Turns on the RB3 pin to turn on the LED
  */
 void TurnOnLexmarkLED() {
-    mPORTBSetPinsDigitalOut( BIT_4 );
-    mPORTBSetPinsDigitalOut( BIT_5 );
-
-    mPORTBSetBits(BIT_4);
-    mPORTBClearBits(BIT_5);
+    mPORTASetPinsDigitalOut( BIT_3 );   
+    mPORTASetBits(BIT_3);
 }
 
 /*
