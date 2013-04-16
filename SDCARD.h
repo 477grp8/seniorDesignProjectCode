@@ -618,6 +618,11 @@ void forwardDataToPrinter() {
     //WriteString("asdklfjasdjklfhasdkfhasdfhasdfasdgfjasdgfsdfggfgasjkfaskfgasdjkfgasdkjfgasdjkfhgasdf");
     //return;
     int j;
+    char tempBufferArray[512];
+    int tempBufferIndex;
+    tempBufferArray = buffer;
+    tempBufferIndex = bufferIndex;
+
     while(curr_read_block != currBlock) {
         SDReadBlock(curr_read_block);
         char tempArray[512];
@@ -627,6 +632,9 @@ void forwardDataToPrinter() {
         WriteString(tempArray);
 
         curr_read_block++;
+    }
+    for(j = 0; j < tempBufferIndex; j++) {
+        PutCharacter((char) tempBufferArray[j]);
     }
 }
 void addByteToBuffer(char characterToWrite) {

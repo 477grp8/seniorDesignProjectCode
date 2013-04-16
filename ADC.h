@@ -114,9 +114,10 @@ int getChannel5Value() {
  * Turns off the RB3 pin to turn off the LED
  */
 void TurnOffLexmarkLED() {
-   //PORTSetPinsAnalogIn( IOPORT_A, BIT_3);
-     mPORTASetPinsDigitalIn( BIT_3 );    //Ensures the pin is in GPIO mode
-    mPORTAClearBits(BIT_3);              //Turn off the bit
+     mPORTAClearBits(BIT_3);              //Turn off the bit
+
+    mPORTASetPinsDigitalIn( BIT_3 );    //Ensures the pin is in GPIO mode
+     //PORTSetPinsAnalogIn( IOPORT_A, BIT_3);
 }
 
 /*

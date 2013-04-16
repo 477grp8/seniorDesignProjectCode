@@ -84,25 +84,31 @@ void __ISR(_TIMER_1_VECTOR, ipl3) Timer1Handler(void)
         INTClearFlag( INT_T1 );
        
         EverySecondDo({
-            //SampleLexmarkLEDVoltage();
+            SampleLexmarkLEDVoltage();
             setPrintToUARTFlag(1);
          })
-         if((timeElapsedLEDSample >= LED_SAMPLE_COUNT) && (sampleLEDNow == 0)) {
+
+         
+      /*   if((timeElapsedLEDSample >= LED_SAMPLE_COUNT) && (sampleLEDNow == 0)) {
              TurnOffLexmarkLED();
              timeElapsedLEDTurnedOff = 0;
+             //timeElapsedLEDSample = 0;
              sampleLEDNow = 1;
-
+         }
+         if((timeElapsedLEDTurnedOff >= 0) && (timeElapsedLEDTurnedOff < LED_TURN_OFF_COUNT) && sampleLEDNow == 1){
+             SampleLexmarkLEDVoltage();
          }
          if((timeElapsedLEDTurnedOff >= LED_TURN_OFF_COUNT) && (sampleLEDNow == 1)) {
              sampleLEDNow = 0;
-             SampleLexmarkLEDVoltage();
+             //SampleLexmarkLEDVoltage();
              TurnOnLexmarkLED();
              timeElapsedLEDSample = 0;
              timeElapsedLEDTurnedOff = 0;
          }
+
          timeElapsedLEDSample++;
          timeElapsedLEDTurnedOff++;
-       
+       */
           timeElapsed++;
 
     // one second part has elapsed

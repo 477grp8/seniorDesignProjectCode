@@ -60,6 +60,7 @@ main()
             convertAndPrintIntegerToString("timeElapse => ", timeElapsed);
             convertAndPrintIntegerToString("timeElapsedLEDSample => ", timeElapsedLEDSample);
             convertAndPrintIntegerToString("timeElapsedLEDTurnedOff => ", timeElapsedLEDTurnedOff);
+            convertAndPrintIntegerToString("sampleLEDNow => ", sampleLEDNow);
 
             convertAndPrintIntegerToString(" ADC Value => ", getChannel5Value());
             printShadowDetect();
