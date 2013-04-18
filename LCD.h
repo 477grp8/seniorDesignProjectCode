@@ -105,7 +105,7 @@ void initializeLCD() {
     delay(10);
     sendByteToLCD(0x38, 0, 0); // 8-bit and 2 line
     sendByteToLCD(0x10, 0, 0); // set cursor
-    sendByteToLCD(0x0F, 0, 0); // display on; cursor on; blinking cursor on
+    sendByteToLCD(0x0c, 0, 0); // display on; cursor on; blinking cursor on
     sendByteToLCD(0x06, 0, 0); // entry mode on
     sendByteToLCD(0x01, 0, 0); // clear the display
 
@@ -143,6 +143,69 @@ void printToLCD(char* str){
     }
 }
 
+/*
+ * @author - Vineeth
+ *
+ * @params -    stringToBePrinted => Optional string that needs to be printed on the LCD
+ *         -    valueToBePrinted => Is the integer value that needs to be converted
+ *                              into a string and printed out on the LCD
+ *
+ * This function accepts a integer value, and does the necessary conversions
+ * required to send the value out to the LCD
+ */
+void convertAndPrintIntegerToStringToLCD(char * stringToBePrinted, int valueToBePrinted) {
+    int temp = valueToBePrinted;
+    int lengthOfInteger = 0;
+
+    //WriteString(stringToBePrinted);
+    printToLCD(stringToBePrinted);
+    /*
+     *  Loop to count number of digits in the integer to be printed.
+     */
+    while(temp != 0) {
+        temp = temp / 10;
+        lengthOfInteger++;
+    }
+
+    int modDivideValue = 0;
+    int digitToBePrinted = 0;
+
+    /*
+     *  Loop to actually start printing out each digit in the integer from left
+     *  to right.
+     */
+    while(lengthOfInteger != 0) {
+        modDivideValue = pow(10, --lengthOfInteger);
+        digitToBePrinted = valueToBePrinted / modDivideValue;
+        valueToBePrinted = valueToBePrinted % modDivideValue;
+
+        switch(digitToBePrinted) {
+            case 0 : printToLCD("0");
+                     break;
+            case 1 : printToLCD("1");
+                     break;
+            case 2 : printToLCD("2");
+                     break;
+            case 3 : printToLCD("3");
+                     break;
+            case 4 : printToLCD("4");
+                     break;
+            case 5 : printToLCD("5");
+                     break;
+            case 6 : printToLCD("6");
+                     break;
+            case 7 : printToLCD("7");
+                     break;
+            case 8 : printToLCD("8");
+                     break;
+            case 9 : printToLCD("9");
+                     break;
+            default : printToLCD("");
+                     break;
+        }
+    }
+    printToLCD(" ");
+}
 
 #endif	/* LCD_H */
 

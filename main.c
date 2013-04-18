@@ -8,6 +8,7 @@
 #include "MISCELLANEOUS.h"
 #include "TIMER.h"
 #include "SDCARD.h"
+#include "RPG.h"
 
 /* state machine */
 
@@ -25,7 +26,7 @@ main()
     initializeUART();
     initializeADC();
     initializeLCD();
-
+    initializeRPG();
     
     /* Initialize SD card */
     setup_SDSPI();
@@ -55,6 +56,8 @@ main()
     while( 1 )
     {
         if (getPrintToUARTFlag() == 1){
+            LCDMenuControl();
+        
             //mPORTAToggleBits( LED_MASK );
             convertAndPrintIntegerToString("i => ", i++);
             convertAndPrintIntegerToString("timeElapse => ", timeElapsed);

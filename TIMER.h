@@ -15,6 +15,7 @@
 #include "UART.h"
 #include "MISCELLANEOUS.h"
 #include "SDCARD.h"
+#include "RPG.h"
 
 unsigned short int SecondParts;
 unsigned short int TenthSecond = 0;
@@ -82,6 +83,9 @@ void __ISR(_TIMER_1_VECTOR, ipl3) Timer1Handler(void)
 {
     // clear the interrupt flag
         INTClearFlag( INT_T1 );
+
+        updateEncoder();
+        pushbuttonloop();
        
         EverySecondDo({
             SampleLexmarkLEDVoltage();

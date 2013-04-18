@@ -620,7 +620,10 @@ void forwardDataToPrinter() {
     int j;
     char tempBufferArray[512];
     int tempBufferIndex;
-    tempBufferArray = buffer;
+        for(j = 0; j < 512; j++) {
+            tempBufferArray[j] = (char) buffer[j];
+        }
+
     tempBufferIndex = bufferIndex;
 
     while(curr_read_block != currBlock) {
